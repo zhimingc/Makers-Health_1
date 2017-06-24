@@ -55,7 +55,7 @@ public class AfflictionManager : MonoBehaviour {
       RectTransform t = statBars[i].GetComponent<RectTransform>();
       int ai = (int)statBars[i].GetComponent<StatScript>().statType;
       Vector3 newPos = new Vector3(t.anchoredPosition.x, t.anchoredPosition.y - t.rect.height / 2.0f, 0);
-
+      newPos.z -= 1;
       int afflictLimit = GetThreshold((AFFLICT_TYPE)ai);
       
       //newPos.y += t.rect.height * (afflictLimit[i].threshold[0] / person.maxStat[i]);

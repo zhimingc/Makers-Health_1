@@ -22,6 +22,7 @@ public class PersonManager : MonoBehaviour {
   public float[] maxStat; // need to correspond to enum
   public float[] curStat;
   public float[] passiveStatDelta;
+  public Sprite[] personSprite;
 
   public Personality personality;
   public AFFLICT_TYPE afflictionType;
@@ -46,6 +47,10 @@ public class PersonManager : MonoBehaviour {
     if (!isPassive) foreach (Text txt in passiveStatText) txt.enabled = false;
 
     SetAffliction(AFFLICT_TYPE.NONE);
+
+    // set sprite
+    int spriteNum = Random.Range(0, personSprite.Length);
+    GetComponent<SpriteRenderer>().sprite = personSprite[spriteNum];
   }
 
   void Update()
@@ -114,6 +119,8 @@ public class PersonManager : MonoBehaviour {
 
     // Advance stress amount
     stressAmt = Mathf.Min(10, stressAmt + personality.stressIncrease * stepAmt);
+    if (curEnergy > maxEnergy - stressAmt) curEnergy = maxEnergy - (int)stressAmt;
+
     if (isPassive)
     {
       int curMaxEnergy = maxEnergy - (int)stressAmt;
