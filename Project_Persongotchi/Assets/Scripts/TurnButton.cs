@@ -9,6 +9,7 @@ public class TurnButton : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
     dayMan = GameObject.Find("day_manager").GetComponent<DayManager>();
+    if (dayMan.isRealTime) gameObject.SetActive(false);
 	}
 	
 	// Update is called once per frame

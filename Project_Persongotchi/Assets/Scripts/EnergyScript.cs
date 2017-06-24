@@ -26,7 +26,7 @@ public class EnergyScript : MonoBehaviour {
     stressBar.fillAmount = personMan.GetStressPercentage();
 
     stressBar.GetComponentInChildren<Text>().text = personMan.stressAmt.ToString("0");
-    energyText.text = personMan.curEnergy.ToString("0");
+    energyText.text = personMan.curEnergy.ToString("0") + "/" + (personMan.maxEnergy - (int)personMan.stressAmt).ToString("0");
   }
 
 }

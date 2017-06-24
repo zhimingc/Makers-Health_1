@@ -17,6 +17,7 @@ public class AfflictConditions
   //public int sleepThreshold;
   //public int waterThreshold;
   //public int exerciseThreshold;
+  public GameObject[] afflictBar;
   public int[] threshold;
 }
 
@@ -52,12 +53,14 @@ public class AfflictionManager : MonoBehaviour {
     for (int i = 0; i < (int)AFFLICT_TYPE.NONE; ++i)
     {
       RectTransform t = statBars[i].GetComponent<RectTransform>();
+      int ai = (int)statBars[i].GetComponent<StatScript>().statType;
       Vector3 newPos = new Vector3(t.anchoredPosition.x, t.anchoredPosition.y - t.rect.height / 2.0f, 0);
 
-      int afflictLimit = GetThreshold((AFFLICT_TYPE)i);
+      int afflictLimit = GetThreshold((AFFLICT_TYPE)ai);
+      
       //newPos.y += t.rect.height * (afflictLimit[i].threshold[0] / person.maxStat[i]);
       newPos.y += t.rect.height * (afflictLimit / person.maxStat[i]);
-      afflictBars[i].transform.position = newPos;
+      afflictBars[ai].transform.position = newPos;
     }
   }
 

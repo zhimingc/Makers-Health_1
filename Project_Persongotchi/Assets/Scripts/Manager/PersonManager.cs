@@ -11,28 +11,54 @@ public class Personality
   public float[] statDelta;
 
   // per turn, change this with event later
-  public int stressIncrease;
+  public float stressIncrease;
 };
 
 public class PersonManager : MonoBehaviour {
 
-  public int maxEnergy, stressAmt, curEnergy; // curEnergy = maxEnergy - stressAmt
+  public bool isPassive;
+  public float stressAmt;
+  public int maxEnergy, curEnergy; // curEnergy = maxEnergy - stressAmt
   public float[] maxStat; // need to correspond to enum
   public float[] curStat;
+  public float[] passiveStatDelta;
+
   public Personality personality;
   public AFFLICT_TYPE afflictionType;
   private GameObject[] statBars;
   private float turnScale;
   private Text afflictionText;
+  private Text[] passiveStatText;
 
 	// Use this for initialization
 	void Start () {
+    passiveStatDelta = new float[3] { 0, 0, 0 };
     statBars = GameObject.FindGameObjectsWithTag("stat_bar");
-    curEnergy = maxEnergy - stressAmt;
-    turnScale = 60.0f;
+    curEnergy = maxEnergy - (int)stressAmt;
+    turnScale = 1.0f;
     afflictionText = GameObject.Find("affliction_text").GetComponent<Text>();
 
+    // Passive text
+    passiveStatText = new Text[3];
+    passiveStatText[0] = GameObject.Find("sleep_rate").GetComponent<Text>();
+    passiveStatText[1] = GameObject.Find("water_rate").GetComponent<Text>();
+    passiveStatText[2] = GameObject.Find("exercise_rate").GetComponent<Text>();
+    if (!isPassive) foreach (Text txt in passiveStatText) txt.enabled = false;
+
     SetAffliction(AFFLICT_TYPE.NONE);
+  }
+
+  void Update()
+  {
+    if (isPassive)
+    {
+      UpdatePassiveStatTexts();
+    }
+
+    if (afflictionType != AFFLICT_TYPE.NONE)
+    {
+      GetComponent<Animator>().SetBool("run", true);
+    }
   }
 
   void UpdateAllStatBars()
@@ -43,31 +69,65 @@ public class PersonManager : MonoBehaviour {
     }
   }
 
-  void ReplenishEnergy()
+  void OnMouseOver()
   {
-    curEnergy = maxEnergy - stressAmt;
+    if (Input.GetMouseButtonDown(0) && afflictionType != AFFLICT_TYPE.NONE)
+    {
+      Application.OpenURL("http://www.nomossgames.com/wegotchi/not-great.html");
+    }
+  }
+
+  void UpdatePassiveStatTexts()
+  {
+    for(int i = 0; i < 3; ++i)
+    {
+      passiveStatText[i].text = passiveStatDelta[i].ToString("0") + "/-" + personality.statDelta[i].ToString("0");
+    }
+  }
+
+  public void ReplenishEnergy()
+  {
+    if (isPassive) return;
+    curEnergy = maxEnergy - (int)stressAmt;
   }
 
   public void SetAffliction(AFFLICT_TYPE type)
   {
     afflictionType = type;
     if (afflictionType != AFFLICT_TYPE.NONE)
+    {
       afflictionText.text = afflictionType.ToString();
+
+    }
     else
       afflictionText.text = "";
   }
 
-  public void StepTurn()
+  public void StepTurn(float stepAmt)
   {
     for (int i = 0; i < curStat.Length; ++i)
     {
-      curStat[i] = Mathf.Max(0.0f, curStat[i] - personality.statDelta[i] * turnScale);
+      float amtToMinus = personality.statDelta[i];
+      if (isPassive) amtToMinus -= passiveStatDelta[i];
+      curStat[i] = Mathf.Max(0.0f, curStat[i] - amtToMinus * stepAmt);
     }
 
     // Advance stress amount
-    stressAmt = Mathf.Min(10, stressAmt + personality.stressIncrease);
+    stressAmt = Mathf.Min(10, stressAmt + personality.stressIncrease * stepAmt);
+    if (isPassive)
+    {
+      int curMaxEnergy = maxEnergy - (int)stressAmt;
+      int spentEnergy = 0;
+      foreach (int num in passiveStatDelta) spentEnergy += num;
+      while (spentEnergy-- > curMaxEnergy)
+      {
+        int max = 0;
+        for (int i = 0; i < 3; ++i)
+          if (passiveStatDelta[i] > max) max = i;
+        --passiveStatDelta[max];
+      }
+    }
 
-    ReplenishEnergy();
     UpdateAllStatBars();
   }
 
@@ -79,7 +139,7 @@ public class PersonManager : MonoBehaviour {
 
   public float GetStressPercentage()
   {
-    return (float)stressAmt / maxEnergy;
+    return stressAmt / maxEnergy;
   }
 
   public float GetEnergyPercentage()
@@ -94,11 +154,22 @@ public class PersonManager : MonoBehaviour {
 
   public void IncreaseStat(STAT_TYPE type, int amt)
   {
-    if (curEnergy > 0 && curStat[(int)type] + amt < maxStat[(int)type])
+    if (curEnergy > 0)
     {
+      if (isPassive)
+      {
+        ++passiveStatDelta[(int)type];
+      }
+      else
+      {
+        if (curStat[(int)type] + amt < maxStat[(int)type])
+        {
+          curStat[(int)type] += amt;
+        }
+      }
       --curEnergy;
-      curStat[(int)type] += amt;
     }
+
   }
 
   public void DecreaseStat(STAT_TYPE type, int amt)
@@ -106,7 +177,15 @@ public class PersonManager : MonoBehaviour {
     if (curEnergy < maxEnergy - stressAmt)
     {
       ++curEnergy;
-      curStat[(int)type] -= amt;
+
+      if (isPassive)
+      {
+        --passiveStatDelta[(int)type];
+      }
+      else
+      {
+        curStat[(int)type] -= amt;
+      }
     }
   }
 }
