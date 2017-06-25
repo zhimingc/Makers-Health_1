@@ -12,6 +12,7 @@ public class DayManager : MonoBehaviour {
   private PersonManager personMan;
   private Text dayTrackerText;
   private AfflictionManager afflictMan;
+  private EventManager eventMan;
 
   // Use this for initialization
   void Start () {
@@ -20,6 +21,7 @@ public class DayManager : MonoBehaviour {
     dayTrackerText = GameObject.Find("turn_tracker").GetComponent<Text>();
     personMan = GameObject.Find("person").GetComponent<PersonManager>();
     afflictMan = GameObject.Find("afflict_manager").GetComponent<AfflictionManager>();
+    eventMan = GameObject.Find("event_manager").GetComponent<EventManager>();
 
     UpdateTurnTracker();
   }
@@ -35,10 +37,14 @@ public class DayManager : MonoBehaviour {
   void UpdateTurnTracker()
   {
     dayTrackerText.text = "Day " + dayTracker.ToString();
+
+    eventMan.SendEvent();
   }
 
   void RealTimeUpdate()
   {
+    if (eventMan.isEvent) return;
+
     // check afflictions
     afflictMan.CheckAffliction();
 

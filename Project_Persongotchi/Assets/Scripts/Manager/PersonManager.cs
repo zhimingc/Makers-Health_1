@@ -23,21 +23,23 @@ public class PersonManager : MonoBehaviour {
   public float[] curStat;
   public float[] passiveStatDelta;
   public Sprite[] personSprite;
-
+    
   public Personality personality;
   public AFFLICT_TYPE afflictionType;
   private GameObject[] statBars;
   private float turnScale;
   private Text afflictionText;
   private Text[] passiveStatText;
+  private EventManager eventMan;
 
-	// Use this for initialization
-	void Start () {
+  // Use this for initialization
+  void Start () {
     passiveStatDelta = new float[3] { 0, 0, 0 };
     statBars = GameObject.FindGameObjectsWithTag("stat_bar");
     curEnergy = maxEnergy - (int)stressAmt;
     turnScale = 1.0f;
     afflictionText = GameObject.Find("affliction_text").GetComponent<Text>();
+    eventMan = GameObject.Find("event_manager").GetComponent<EventManager>();
 
     // Passive text
     passiveStatText = new Text[3];
@@ -101,8 +103,7 @@ public class PersonManager : MonoBehaviour {
     afflictionType = type;
     if (afflictionType != AFFLICT_TYPE.NONE)
     {
-      afflictionText.text = afflictionType.ToString();
-
+      //afflictionText.text = afflictionType.ToString();
     }
     else
       afflictionText.text = "";
@@ -161,6 +162,8 @@ public class PersonManager : MonoBehaviour {
 
   public void IncreaseStat(STAT_TYPE type, int amt)
   {
+    if (eventMan.isEvent) return;
+
     if (curEnergy > 0)
     {
       if (isPassive)
@@ -181,6 +184,8 @@ public class PersonManager : MonoBehaviour {
 
   public void DecreaseStat(STAT_TYPE type, int amt)
   {
+    if (eventMan.isEvent) return;
+
     if (curEnergy < maxEnergy - stressAmt)
     {
       ++curEnergy;

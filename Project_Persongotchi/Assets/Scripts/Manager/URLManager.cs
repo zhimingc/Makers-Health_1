@@ -16,6 +16,7 @@ public class URLManager : MonoBehaviour {
 
   void SetName()
   {
+    //url = "http://www.nomossgames.com/wegotchi/we/?n=Tania&otherstuff";
     int nameGet = url.IndexOf("n=");
     if (nameGet != -1)
     {
